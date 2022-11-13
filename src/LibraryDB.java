@@ -195,4 +195,32 @@ class Admin {
             }
 
         }
+        Integer AdminAddUser(OracleConnection conn) throws IOException {
+            PreparedStatement 	addReader;
+            ResultSet rst =null;
+            try {
+            		//st = conn.createStatement();
+            	    addReader = conn.prepareStatement ("INSERT INTO READER(ACCOUNTID,PASSWORD,EMAIL,STATUS,LEND) VALUES (?,?,?,?,?)");
+            		String accountId, password, email;
+            		int status = 1;
+            		int lend = 0;
+            		BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+                    System.out.print("accountId: ");
+                    accountId = br.readLine();
+                    System.out.print("password: ");
+                    password = br.readLine();
+                    System.out.print("email: ");
+                    email = br.readLine();
+                    addReader.setString(1,accountId);
+                    addReader.setString(2,password);
+                    addReader.setString(3,email);
+                    addReader.setLong(4,status);
+                    addReader.setLong(5,lend);
+                    boolean result = addReader.execute();
+                    if(result = true) System.out.println("add success");
+                    else System.out.println("add fail");
+            }catch (SQLException e) {
+                throw new RuntimeException(e);
+            }
+        }
 }
