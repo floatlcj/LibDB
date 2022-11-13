@@ -21,8 +21,8 @@ public class LibraryDB
 //        username = buffer.readLine();
 //        System.out.print("Enter your password: ");
 //        pwd = buffer.readLine();
-        username = "\"21100052d\"";
-        pwd = "Lcj200268";
+        username = "\"21103213d\"";
+        pwd = "hfnmexfb";
 
         System.out.println("Loading...");
         // Connection
@@ -65,7 +65,7 @@ public class LibraryDB
                     }
                     if (knum == 5){
                         clearScreen();
-                        reader.ReaderrRecommendBook(conn);
+                        reader.ReaderRecommendBook(conn);
                     }
                     if (knum == -1) {clearScreen(); break;}
                 }
@@ -186,6 +186,7 @@ public class LibraryDB
 }
 
 class Reader{
+    String accountID;
     Boolean RLogin(OracleConnection conn) throws IOException{
         PreparedStatement pst;
         ResultSet rst;
@@ -201,7 +202,7 @@ class Reader{
             pst.setString(2, password);
             rst = pst.executeQuery();
             if (rst.next())
-            {System.out.println("You log in as " + rst.getString("accountid"));return true;}
+            {this.accountID = rst.getString("accountid"); System.out.println("You log in as " + rst.getString("accountid"));return true;}
             else {System.out.println("Wrong Reader name or password."); return false;}
         } catch (SQLException e) {
             throw new RuntimeException(e);
@@ -231,7 +232,7 @@ class Reader{
             keyword = stringBuilder.toString();
             pst.setString(1, keyword);
             rst = pst.executeQuery();
-            if (!rst.next())
+            if (rst == null)
                 System.out.println("No result");
             while (rst.next())
             {
@@ -254,128 +255,124 @@ class Reader{
             System.out.println();
         }
     }
-    
+
     void ReaderFindFriend(OracleConnection conn) throws IOException {
         PreparedStatement findFriend;
         ResultSet rst =null;
         try {
-        		//st = conn.createStatement();
-        	    findFriend = conn.prepareStatement ("select READER.ACCOUNTID,READER.EMAIL from READER where READERID in (select OPERATION.READERID from OPERATION where ISBN = ?)");
-        		int isbn;
-        		BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
-                System.out.print("ISBN: ");
-                isbn = Integer.valueOf(br.readLine());
-                findFriend.setInt(1,isbn);
-                rst = findFriend.executeQuery();
-                if(rst == null) {
-                	System.out.println("Find nobody"); 
-                	}
-                while (rst.next())
-                {System.out.println("Friend name: " + rst.getString("ACCOUNTID") + "   " +"Friend email: " + rst.getString("EMAIL"));}
+            //st = conn.createStatement();
+            findFriend = conn.prepareStatement ("select READER.ACCOUNTID,READER.EMAIL from READER where READERID in (select OPERATION.READERID from OPERATION where ISBN = ?)");
+            int isbn;
+            BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+            System.out.print("ISBN: ");
+            isbn = Integer.valueOf(br.readLine());
+            findFriend.setInt(1,isbn);
+            rst = findFriend.executeQuery();
+            if(rst == null) {
+                System.out.println("Find nobody");
+            }
+            while (rst.next())
+            {System.out.println("Friend name: " + rst.getString("ACCOUNTID") + "   " +"Friend email: " + rst.getString("EMAIL"));}
 
-                
+
         }catch (SQLException e) {
             throw new RuntimeException(e);
         }
     }
-    
-    
-     void ReaderrRecommendBook(OracleConnection conn) throws IOException {
+
+
+    void ReaderRecommendBook(OracleConnection conn) throws IOException {
         PreparedStatement findbook;
         ResultSet rst =null;
         try {
-        		
-        	    findbook = conn.prepareStatement ("SELECT BOOK.ISBN,BOOK.TITLE FROM BOOK WHERE BOOK.CATEGORY IN (SELECT OPERATION.CATEGORY FROM OPERATION WHERE OPERATION.ACCOUNTID = ?)");
-        		String accountId;
-        		BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
-                System.out.print("Please inout your accountId to see your recommend books: ");
-                accountId = br.readLine();
-                findbook.setString(1,accountId);
-                rst = findbook.executeQuery();
-                if(rst == null) 
-                	System.out.println("Find nothing, please read more books first, thank you."); 
-                while (rst.next())
-                System.out.println("We recommend you to read: ");
-                System.out.println("BOOK ISBN: " + rst.getString("ISBN") + "   " +"BOOK TITLE: " + rst.getString("TITLE"));
-                
-                
+
+            findbook = conn.prepareStatement ("SELECT book.ISBN, book.TITLE FROM BOOK WHERE book.CATEGORY IN (SELECT OPERATION.CATEGORY FROM OPERATION WHERE operation.ACCOUNTID = ?)");
+            findbook.setString(1,accountID);
+            rst = findbook.executeQuery();
+            if(rst == null)
+                System.out.println("Find nothing, please read more books first, thank you.");
+            System.out.println("We recommend you to read: ");
+            while (rst.next()) {
+                System.out.println("BOOK ISBN: " + rst.getString("ISBN") + "   " + "BOOK TITLE: " + rst.getString("TITLE"));
+            }
+
         }catch (SQLException e) {
             throw new RuntimeException(e);
         }
     }
-    
-    
-    
+
+
+
 }
 class Admin {
-        Boolean ALogin(OracleConnection conn) throws IOException {
-            PreparedStatement pst;
-            ResultSet rst;
-            try {
-                pst = conn.prepareStatement("select admin_name, password from admin where admin_name = ? and password = ?");
-                String adminName, password;
-                BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
-                System.out.print("Admin name: ");
-                adminName = br.readLine();
-                System.out.print("Password: ");
-                password = br.readLine();
-                pst.setString(1, adminName);
-                pst.setString(2, password);
-                rst = pst.executeQuery();
-                if (rst.next())
-                {System.out.println("You login as " + rst.getString("admin_name"));return true;}
-                else {System.out.println("Wrong Admin name or password."); return false;}
-            } catch (SQLException e) {
-                throw new RuntimeException(e);
-            }
+    Boolean ALogin(OracleConnection conn) throws IOException {
+        PreparedStatement pst;
+        ResultSet rst;
+        try {
+            pst = conn.prepareStatement("select admin_name, password from admin where admin_name = ? and password = ?");
+            String adminName, password;
+            BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+            System.out.print("Admin name: ");
+            adminName = br.readLine();
+            System.out.print("Password: ");
+            password = br.readLine();
+            pst.setString(1, adminName);
+            pst.setString(2, password);
+            rst = pst.executeQuery();
+            if (rst.next())
+            {System.out.println("You login as " + rst.getString("admin_name"));return true;}
+            else {System.out.println("Wrong Admin name or password."); return false;}
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
 
+    }
+    void AdminAddUser(OracleConnection conn) throws IOException {
+        PreparedStatement 	addReader;
+        ResultSet rst =null;
+        try {
+            //st = conn.createStatement();
+            addReader = conn.prepareStatement ("INSERT INTO READER(ACCOUNTID,PASSWORD,EMAIL,STATUS,LEND) VALUES (?,?,?,?,?)");
+            String accountId, password, email;
+            int status = 1;
+            int lend = 0;
+            BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+            System.out.print("accountId: ");
+            accountId = br.readLine();
+            System.out.print("password: ");
+            password = br.readLine();
+            System.out.print("email: ");
+            email = br.readLine();
+            addReader.setString(1,accountId);
+            addReader.setString(2,password);
+            addReader.setString(3,email);
+            addReader.setLong(4,status);
+            addReader.setLong(5,lend);
+            boolean result = addReader.execute();
+            if(result = true) System.out.println("add success");
+            else System.out.println("add fail");
+        }catch (SQLException e) {
+            throw new RuntimeException(e);
         }
-        void AdminAddUser(OracleConnection conn) throws IOException {
-            PreparedStatement 	addReader;
-            ResultSet rst =null;
-            try {
-            		//st = conn.createStatement();
-            	    addReader = conn.prepareStatement ("INSERT INTO READER(ACCOUNTID,PASSWORD,EMAIL,STATUS,LEND) VALUES (?,?,?,?,?)");
-            		String accountId, password, email;
-            		int status = 1;
-            		int lend = 0;
-            		BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
-                    System.out.print("accountId: ");
-                    accountId = br.readLine();
-                    System.out.print("password: ");
-                    password = br.readLine();
-                    System.out.print("email: ");
-                    email = br.readLine();
-                    addReader.setString(1,accountId);
-                    addReader.setString(2,password);
-                    addReader.setString(3,email);
-                    addReader.setLong(4,status);
-                    addReader.setLong(5,lend);
-                    boolean result = addReader.execute();
-                    if(result = true) System.out.println("add success");
-                    else System.out.println("add fail");
-            }catch (SQLException e) {
-                throw new RuntimeException(e);
-            }
+    }
+
+    void AdminDeleteUser(OracleConnection conn) throws IOException {
+        PreparedStatement 	deleteReader;
+        ResultSet rst =null;
+        try {
+            deleteReader = conn.prepareStatement ("delete from READER where READER.ACCOUNTID = ? ");
+            String accountId;
+            BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+            System.out.print("accountId: ");
+            accountId = br.readLine();
+            deleteReader.setString(1,accountId);
+            boolean result = deleteReader.execute();
+            if(result = true) System.out.println("delete success");
+            else System.out.println("delete fail");
+        }catch (SQLException e) {
+            throw new RuntimeException(e);
         }
-    
-     void AdminDeleteUser(OracleConnection conn) throws IOException {
-            PreparedStatement 	deleteReader;
-            ResultSet rst =null;
-            try {
-            	    deleteReader = conn.prepareStatement ("delete from READER where READER.ACCOUNTID = ? ");
-            		String accountId;
-            		BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
-                    System.out.print("accountId: ");
-                    accountId = br.readLine();
-                    deleteReader.setString(1,accountId);
-                    boolean result = deleteReader.execute();
-                    if(result = true) System.out.println("delete success");
-                    else System.out.println("delete fail");
-            }catch (SQLException e) {
-                throw new RuntimeException(e);
-            }
-        }
-    
-    
+    }
+
+
 }
