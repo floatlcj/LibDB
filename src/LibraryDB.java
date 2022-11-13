@@ -52,6 +52,7 @@ public class LibraryDB
                     System.out.println("2. search books by Author");
                     System.out.println("3. search books by Category");
                     System.out.println("4. find friend by book");
+                    System.out.println("5. recommended books")
                     System.out.println("-1 to exit");
                     knum = Integer.valueOf(readEntry("Input your choice: ")).intValue();
                     if (knum == 1 || knum == 2 || knum == 3) {
@@ -61,6 +62,10 @@ public class LibraryDB
                     if (knum == 4){
                         clearScreen();
                         reader.ReaderFindFriend(conn);
+                    }
+                    if (knum == 5){
+                        clearScreen();
+                        reader.ReaderrRecommendBook(conn);
                     }
                     if (knum == -1) {clearScreen(); break;}
                 }
@@ -275,7 +280,7 @@ class Reader{
     }
     
     
-     Boolean ReaderrRecommendBook(OracleConnection conn) throws IOException {
+     void ReaderrRecommendBook(OracleConnection conn) throws IOException {
         PreparedStatement findbook;
         ResultSet rst =null;
         try {
