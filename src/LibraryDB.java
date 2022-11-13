@@ -171,6 +171,32 @@ class Reader{
             throw new RuntimeException(e);
         }
     }
+    
+    Boolean ReaderFindFriend(OracleConnection conn) throws IOException {
+        PreparedStatement findFriend;
+        ResultSet rst =null;
+        try {
+        		//st = conn.createStatement();
+        	    findFriend = conn.prepareStatement ("select READER.ACCOUNTID,READER.EMAIL from READER where READERID in (select OPERATION.READERID from OPERATION where ISBN = '?')");
+        		int isbn;
+        		BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+                System.out.print("ISBN: ");
+                isbn = Integer.valueOf(br.readLine());
+                findFriend.setLong(1,isbn);
+                rst = findFriend.executeQuery();
+                if(rst == null) {
+                	System.out.println("Find nobody"); 
+                	return false;}
+                while (rst.next())
+                {System.out.println("Friend name: " + rst.getString("READER.ACCOUNTID" + "   " +"Friend email: " + rst.getString("READER.EMAIL")));return true;}
+                
+                
+        }catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+    
+    
 }
 class Admin {
         Boolean ALogin(OracleConnection conn) throws IOException {
