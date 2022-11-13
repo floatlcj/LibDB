@@ -373,6 +373,33 @@ class Admin {
             throw new RuntimeException(e);
         }
     }
+    
+    void AnalysisReport_Category(){
+		String sql = "select category, count(category) from book group by category order by count(category) desc";
+		ResultSet result;
+		PreparedStatement stmt;
+		try{
+			stmt = conn.prepareStatement(sql);
+		}catch(Exception e){
+			e.printStackTrace();
+		}
+		try{
+			result = stmt.executeQuery();
 
+			while (result.next()) {
+				System.out.flush();
+				//String category = result.getString(1);
+				//int count_category = result.getInt(2);
+				System.out.println(result.getString(1)+" "+result.getInt(2));
+			}
+			result.close();
+			conn.close();
+			stmt.close();
+		}catch(SQLException e){
+			e.printStackTrace();
+		}
+		System.out.println("The Categories from the top are the most popular.");
+	}
+    
 
 }
