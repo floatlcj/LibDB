@@ -77,6 +77,7 @@ public class LibraryDB
                     while (input != -1) {
                         System.out.println("1. Add reader");
                         System.out.println("2. Delete reader");
+                        System.out.println("3. Analysis category");
                         System.out.println("-1 to exit");
                         input = Integer.valueOf(readEntry("Input your choice: "));
                         if (input == 1) {
@@ -86,6 +87,10 @@ public class LibraryDB
                         else if(input == 2) {
                             clearScreen();
                             admin.AdminDeleteUser(conn);
+                        }
+                        else if(input == 3){
+			     clearScreen();
+                             admin.AnalysisReport_Category(conn);
                         }
                         else if (input == -1) {clearScreen(); break;}
                     }
@@ -246,7 +251,6 @@ class Reader{
                         rst.getString(5) + " " +
                         rst.getInt(6));
                 System.out.println("-------------------------------------------------------------------");
-                System.out.println();
             }
         } catch (SQLException e){
             throw new RuntimeException(e);
@@ -271,8 +275,12 @@ class Reader{
             if(rst == null) {
                 System.out.println("Find nobody");
             }
+            System.out.println("-------------------------------------------------------------------");
             while (rst.next())
-            {System.out.println("Friend name: " + rst.getString("ACCOUNTID") + "   " +"Friend email: " + rst.getString("EMAIL"));}
+            {
+                System.out.println("Friend name: " + rst.getString("ACCOUNTID") + "   " +"Friend email: " + rst.getString("EMAIL"));
+                System.out.println("-------------------------------------------------------------------");
+            }
 
 
         }catch (SQLException e) {
@@ -292,8 +300,10 @@ class Reader{
             if(rst == null)
                 System.out.println("Find nothing, please read more books first, thank you.");
             System.out.println("We recommend you to read: ");
+            System.out.println("-------------------------------------------------------------------");
             while (rst.next()) {
                 System.out.println("BOOK ISBN: " + rst.getString("ISBN") + "   " + "BOOK TITLE: " + rst.getString("TITLE"));
+                System.out.println("-------------------------------------------------------------------");
             }
 
         }catch (SQLException e) {
@@ -373,33 +383,29 @@ class Admin {
             throw new RuntimeException(e);
         }
     }
-    
-    void AnalysisReport_Category(){
-		String sql = "select category, count(category) from book group by category order by count(category) desc";
-		ResultSet result;
-		PreparedStatement stmt;
-		try{
-			stmt = conn.prepareStatement(sql);
-		}catch(Exception e){
-			e.printStackTrace();
-		}
-		try{
-			result = stmt.executeQuery();
 
-			while (result.next()) {
-				System.out.flush();
-				//String category = result.getString(1);
-				//int count_category = result.getInt(2);
-				System.out.println(result.getString(1)+" "+result.getInt(2));
-			}
-			result.close();
-			conn.close();
-			stmt.close();
-		}catch(SQLException e){
-			e.printStackTrace();
-		}
-		System.out.println("The Categories from the top are the most popular.");
-	}
-    
+    void AnalysisReport_Category(OracleConnection conn){
+        String sql = "select category, count(category) from book group by category order by count(category) desc";
+        ResultSet result;
+        Statement stmt;
+        try {
+            stmt = conn.createStatement();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+        try{
+            result = stmt.executeQuery(sql);
+
+            while (result.next()) {
+                System.out.flush();
+                System.out.println(result.getString(1)+" "+result.getInt(2));
+            }
+            result.close();
+            stmt.close();
+        }catch(SQLException e){
+            e.printStackTrace();
+        }
+        System.out.println("The Categories from the top are the most popular.");
+    }
 
 }
