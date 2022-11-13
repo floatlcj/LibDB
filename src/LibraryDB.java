@@ -52,7 +52,7 @@ public class LibraryDB
                     System.out.println("2. search books by Author");
                     System.out.println("3. search books by Category");
                     System.out.println("4. find friend by book");
-                    System.out.println("5. recommended books")
+                    System.out.println("5. recommended books");
                     System.out.println("-1 to exit");
                     knum = Integer.valueOf(readEntry("Input your choice: ")).intValue();
                     if (knum == 1 || knum == 2 || knum == 3) {
