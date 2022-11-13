@@ -249,4 +249,24 @@ class Admin {
                 throw new RuntimeException(e);
             }
         }
+    
+     void AdminDeleteUser(OracleConnection conn) throws IOException {
+            PreparedStatement 	deleteReader;
+            ResultSet rst =null;
+            try {
+            	    deleteReader = conn.prepareStatement ("delete from READER where ACCOUNTID = '?' ");
+            		String accountId;
+            		BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+                    System.out.print("accountId: ");
+                    accountId = br.readLine();
+                    deleteReader.setString(1,accountId);
+                    boolean result = deleteReader.execute();
+                    if(result = true) System.out.println("delete success");
+                    else System.out.println("delete fail");
+            }catch (SQLException e) {
+                throw new RuntimeException(e);
+            }
+        }
+    
+    
 }
