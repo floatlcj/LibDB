@@ -48,6 +48,16 @@ public class LibraryDB
                 if(reader.RLogin(conn)){
                     System.out.println("Reader");
                 }else continue;
+                int knum = 0;
+                while(knum != -1){
+                    System.out.println("Choose the type of keyword to search books.");
+                    System.out.println("1. Title");
+                    System.out.println("2. Author");
+                    System.out.println("3. Category");
+                    System.out.println("-1 to exit");
+                    knum = Integer.valueOf(readEntry("Input your choice: ")).intValue();
+                    reader.SearchingBooks(conn,knum);
+                }
             }
             if(k == 2){
                 Admin admin = new Admin();
@@ -168,6 +178,39 @@ class Reader{
             {System.out.println("You login as " + rst.getString("accountid"));return true;}
             else {System.out.println("Wrong Reader name or password."); return false;}
         } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+    void SearchingBooks(OracleConnection conn, int knum) throws IOException{
+        PreparedStatement pst;
+        ResultSet rst;
+        try{
+            if (knum == 1) {
+                pst = conn.prepareStatement("SELECT * FROM BOOK WHERE TITLE = ?");
+                System.out.println("Enter a book's name to search books: ");
+            }else if (knum == 2) {
+                pst = conn.prepareStatement("SELECT * FROM BOOK WHERE AUTHOR = ?");
+                System.out.println("Enter a book's author to search books: ");
+            }else {
+                pst = conn.prepareStatement("SELECT * FROM BOOK WHERE CATEGORY = ?");
+                System.out.println("Enter a book's category to search books: ");
+            }
+            String keyword;
+            BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+            keyword = br.readLine();
+            pst.setString(1, keyword);
+            rst = pst.executeQuery();
+            while (rst.next())
+            {
+                System.out.flush();
+                System.out.println(rst.getInt(1) + " " +
+                        rst.getString(2) + " " +
+                        rst.getString(3) + " " +
+                        rst.getString(4) + " " +
+                        rst.getString(5) + " " +
+                        rst.getInt(6));
+            }
+        } catch (SQLException e){
             throw new RuntimeException(e);
         }
     }
