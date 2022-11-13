@@ -275,6 +275,32 @@ class Reader{
     }
     
     
+     Boolean ReaderrRecommendBook(OracleConnection conn) throws IOException {
+        PreparedStatement findbook;
+        ResultSet rst =null;
+        try {
+        		
+        	    findbook = conn.prepareStatement ("SELECT BOOK.ISBN,BOOK.TITLE FROM BOOK WHERE BOOK.CATEGORY IN (SELECT OPERATION.CATEGORY FROM OPERATION WHERE OPERATION.ACCOUNTID = ?)");
+        		String accountId;
+        		BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+                System.out.print("Please inout your accountId to see your recommend books: ");
+                accountId = br.readLine();
+                findbook.setString(1,accountId);
+                rst = findbook.executeQuery();
+                if(rst == null) 
+                	System.out.println("Find nothing, please read more books first, thank you."); 
+                while (rst.next())
+                System.out.println("We recommend you to read: ");
+                System.out.println("BOOK ISBN: " + rst.getString("ISBN") + "   " +"BOOK TITLE: " + rst.getString("TITLE"));
+                
+                
+        }catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+    
+    
+    
 }
 class Admin {
         Boolean ALogin(OracleConnection conn) throws IOException {
