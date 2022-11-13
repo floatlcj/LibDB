@@ -20,11 +20,13 @@ public class LibraryDB
 //        char[] password = console.readPassword();
 //        String pwd = String.valueOf(password);
         String username, pwd;
-        BufferedReader buffer = new BufferedReader(new InputStreamReader(System.in));
-        System.out.print("Enter your username: ");
-        username = buffer.readLine();
-        System.out.print("Enter your password: ");
-        pwd = buffer.readLine();
+//        BufferedReader buffer = new BufferedReader(new InputStreamReader(System.in));
+//        System.out.print("Enter your username: ");
+//        username = buffer.readLine();
+//        System.out.print("Enter your password: ");
+//        pwd = buffer.readLine();
+        username = "\"21100052d\"";
+        pwd = "Lcj200268";
 
 
         // Connection
@@ -34,58 +36,79 @@ public class LibraryDB
                         "jdbc:oracle:thin:@studora.comp.polyu.edu.hk:1521:dbms",username,pwd);
         clearScreen();
 
-        // Prepare employee list
-        Statement stmt;
-        ResultSet rset;
-        String snum, namer;
-        int enumber=0;
-
-        // Prepare SQL for request
-        PreparedStatement prepareQuery = conn.prepareStatement(
-                "select * from book where isbn = ?");
-
-        while (enumber != -1)
-        {
-            stmt = conn.createStatement();
-            rset = stmt.executeQuery("select isbn, title from book");
-//            System.out.println("ENO" + " " + "ENAME");
-            while (rset.next())
-            {
-                namer = rset.getString(2);
-                if (!rset.wasNull())
-                {
-                    System.out.println(rset.getInt(1) + " " + namer);
-                }
+        int k = 0;
+        while(k != -1){
+            System.out.println("Choose the type of account to login.");
+            System.out.println("1. Reader");
+            System.out.println("2. Admin");
+            System.out.println("-1 to exit");
+            k = Integer.valueOf(readEntry("Input your choice: ")).intValue();
+            if (k == 1){
+                Reader reader = new Reader();
+                if(reader.RLogin(conn)){
+                    System.out.println("Reader");
+                }else continue;
             }
-
-            // Get request
-            System.out.println();
-            snum = readEntry("ISBN: ");
-            enumber = Integer.valueOf(snum).intValue();
-
-            // Get result
-            prepareQuery.setInt(1, enumber);
-            rset = prepareQuery.executeQuery();
-
-            // Display result
-            while (rset.next())
-            {
-                System.out.flush();
-//                System.out.println("ENO ENAME ZIO HDATE");
-                System.out.println(rset.getInt(1) + " " +
-                        rset.getString(2) + " " +
-                        rset.getString(3) + " " +
-                        rset.getString(4) + " " +
-                        rset.getString(5) + " " +
-                        rset.getInt(6));
+            if(k == 2){
+                Admin admin = new Admin();
+                if (admin.ALogin(conn)){
+                    System.out.println("Admin");
+                }else continue;
             }
-
-            // Continue?
-            System.out.println();
-            snum = readEntry(" Enter a number to continue or -1 to exit. ");
-            enumber = Integer.valueOf(snum).intValue();
-            clearScreen();
         }
+
+//        // Prepare employee list
+//        Statement stmt;
+//        ResultSet rset;
+//        String snum, namer;
+//        int enumber=0;
+//
+//        // Prepare SQL for request
+//        PreparedStatement prepareQuery = conn.prepareStatement(
+//                "select * from book where isbn = ?");
+//
+//        while (enumber != -1)
+//        {
+//            stmt = conn.createStatement();
+//            rset = stmt.executeQuery("select isbn, title from book");
+////            System.out.println("ENO" + " " + "ENAME");
+//            while (rset.next())
+//            {
+//                namer = rset.getString(2);
+//                if (!rset.wasNull())
+//                {
+//                    System.out.println(rset.getInt(1) + " " + namer);
+//                }
+//            }
+//
+//            // Get request
+//            System.out.println();
+//            snum = readEntry("ISBN: ");
+//            enumber = Integer.valueOf(snum).intValue();
+//
+//            // Get result
+//            prepareQuery.setInt(1, enumber);
+//            rset = prepareQuery.executeQuery();
+//
+//            // Display result
+//            while (rset.next())
+//            {
+//                System.out.flush();
+////                System.out.println("ENO ENAME ZIO HDATE");
+//                System.out.println(rset.getInt(1) + " " +
+//                        rset.getString(2) + " " +
+//                        rset.getString(3) + " " +
+//                        rset.getString(4) + " " +
+//                        rset.getString(5) + " " +
+//                        rset.getInt(6));
+//            }
+//
+//            // Continue?
+//            System.out.println();
+//            snum = readEntry(" Enter a number to continue or -1 to exit. ");
+//            enumber = Integer.valueOf(snum).intValue();
+//            clearScreen();
+//        }
 
         // Exit the program
         conn.close();
@@ -124,4 +147,52 @@ public class LibraryDB
         else
             System.out.print("\033[H\033[2J");
     }
+}
+
+class Reader{
+    Boolean RLogin(OracleConnection conn) throws IOException{
+        PreparedStatement pst;
+        ResultSet rst;
+        try {
+            pst = conn.prepareStatement("select accountid, password from reader where accountid = ? and password = ?");
+            String accountID, password;
+            BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+            System.out.print("Reader name: ");
+            accountID = br.readLine();
+            System.out.print("Password: ");
+            password = br.readLine();
+            pst.setString(1, accountID);
+            pst.setString(2, password);
+            rst = pst.executeQuery();
+            if (rst.next())
+            {System.out.println("You login as " + rst.getString("accountid"));return true;}
+            else {System.out.println("Wrong Reader name or password."); return false;}
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+}
+class Admin {
+        Boolean ALogin(OracleConnection conn) throws IOException {
+            PreparedStatement pst;
+            ResultSet rst;
+            try {
+                pst = conn.prepareStatement("select admin_name, password from admin where admin_name = ? and password = ?");
+                String adminName, password;
+                BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+                System.out.print("Admin name: ");
+                adminName = br.readLine();
+                System.out.print("Password: ");
+                password = br.readLine();
+                pst.setString(1, adminName);
+                pst.setString(2, password);
+                rst = pst.executeQuery();
+                if (rst.next())
+                {System.out.println("You login as " + rst.getString("admin_name"));return true;}
+                else {System.out.println("Wrong Admin name or password."); return false;}
+            } catch (SQLException e) {
+                throw new RuntimeException(e);
+            }
+
+        }
 }
