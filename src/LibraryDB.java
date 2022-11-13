@@ -1,7 +1,3 @@
-/************************************/
-/* Employee JDBC					*/
-/************************************/
-
 import java.io.*;
 import java.io.IOException;
 import java.sql.*;
@@ -28,7 +24,7 @@ public class LibraryDB
         username = "\"21100052d\"";
         pwd = "Lcj200268";
 
-
+        System.out.println("Loading...");
         // Connection
         DriverManager.registerDriver(new oracle.jdbc.driver.OracleDriver());
         OracleConnection conn =
@@ -44,25 +40,50 @@ public class LibraryDB
             System.out.println("-1 to exit");
             k = Integer.valueOf(readEntry("Input your choice: ")).intValue();
             if (k == 1){
+                clearScreen();
                 Reader reader = new Reader();
                 if(reader.RLogin(conn)){
-                    System.out.println("Reader");
+                    System.out.println(" ");
                 }else continue;
                 int knum = 0;
                 while(knum != -1){
-                    System.out.println("Choose the type of keyword to search books.");
-                    System.out.println("1. Title");
-                    System.out.println("2. Author");
-                    System.out.println("3. Category");
+                    System.out.println("Choose the function you want to use.");
+                    System.out.println("1. search books by Title");
+                    System.out.println("2. search books by Author");
+                    System.out.println("3. search books by Category");
+                    System.out.println("4. find friend by book");
                     System.out.println("-1 to exit");
                     knum = Integer.valueOf(readEntry("Input your choice: ")).intValue();
-                    reader.SearchingBooks(conn,knum);
+                    if (knum == 1 || knum == 2 || knum == 3) {
+                        clearScreen();
+                        reader.SearchingBooks(conn, knum);
+                    }
+                    if (knum == 4){
+                        clearScreen();
+                        reader.ReaderFindFriend(conn);
+                    }
+                    if (knum == -1) {clearScreen(); break;}
                 }
             }
             if(k == 2){
                 Admin admin = new Admin();
                 if (admin.ALogin(conn)){
-                    System.out.println("Admin");
+                    int input = 0;
+                    while (input != -1) {
+                        System.out.println("1. Add reader");
+                        System.out.println("2. Delete reader");
+                        System.out.println("-1 to exit");
+                        input = Integer.valueOf(readEntry("Input your choice: "));
+                        if (input == 1) {
+                            clearScreen();
+                            admin.AdminAddUser(conn);
+                        }
+                        else if(input == 2) {
+                            clearScreen();
+                            admin.AdminDeleteUser(conn);
+                        }
+                        else if (input == -1) {clearScreen(); break;}
+                    }
                 }else continue;
             }
         }
@@ -175,7 +196,7 @@ class Reader{
             pst.setString(2, password);
             rst = pst.executeQuery();
             if (rst.next())
-            {System.out.println("You login as " + rst.getString("accountid"));return true;}
+            {System.out.println("You log in as " + rst.getString("accountid"));return true;}
             else {System.out.println("Wrong Reader name or password."); return false;}
         } catch (SQLException e) {
             throw new RuntimeException(e);
@@ -187,53 +208,66 @@ class Reader{
         ResultSet rst;
         try{
             if (knum == 1) {
-                pst = conn.prepareStatement("SELECT * FROM BOOK WHERE TITLE = ?");
-                System.out.println("Enter a book's name to search books: ");
+                pst = conn.prepareStatement("SELECT * FROM BOOK WHERE TITLE like ?");
+                System.out.print("Enter a book's name to search books: ");
             }else if (knum == 2) {
-                pst = conn.prepareStatement("SELECT * FROM BOOK WHERE AUTHOR = ?");
-                System.out.println("Enter a book's author to search books: ");
+                pst = conn.prepareStatement("SELECT * FROM BOOK WHERE AUTHOR like ?'");
+                System.out.print("Enter a book's author to search books: ");
             }else {
-                pst = conn.prepareStatement("SELECT * FROM BOOK WHERE CATEGORY = ?");
-                System.out.println("Enter a book's category to search books: ");
+                pst = conn.prepareStatement("SELECT * FROM BOOK WHERE CATEGORY like ?");
+                System.out.print("Enter a book's category to search books: ");
             }
             String keyword;
             BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
             keyword = br.readLine();
+            StringBuilder stringBuilder = new StringBuilder(keyword);
+            stringBuilder.append('%');
+            stringBuilder.insert(0,'%');
+            keyword = stringBuilder.toString();
             pst.setString(1, keyword);
             rst = pst.executeQuery();
+            if (!rst.next())
+                System.out.println("No result");
             while (rst.next())
             {
                 System.out.flush();
+                System.out.println();
+                System.out.println("-------------------------------------------------------------------");
                 System.out.println(rst.getInt(1) + " " +
                         rst.getString(2) + " " +
                         rst.getString(3) + " " +
                         rst.getString(4) + " " +
                         rst.getString(5) + " " +
                         rst.getInt(6));
+                System.out.println("-------------------------------------------------------------------");
+                System.out.println();
             }
         } catch (SQLException e){
             throw new RuntimeException(e);
+        }finally {
+            System.out.println();
+            System.out.println();
         }
     }
     
-    Boolean ReaderFindFriend(OracleConnection conn) throws IOException {
+    void ReaderFindFriend(OracleConnection conn) throws IOException {
         PreparedStatement findFriend;
         ResultSet rst =null;
         try {
         		//st = conn.createStatement();
-        	    findFriend = conn.prepareStatement ("select READER.ACCOUNTID,READER.EMAIL from READER where READERID in (select OPERATION.READERID from OPERATION where ISBN = '?')");
+        	    findFriend = conn.prepareStatement ("select READER.ACCOUNTID,READER.EMAIL from READER where READERID in (select OPERATION.READERID from OPERATION where ISBN = ?)");
         		int isbn;
         		BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
                 System.out.print("ISBN: ");
                 isbn = Integer.valueOf(br.readLine());
-                findFriend.setLong(1,isbn);
+                findFriend.setInt(1,isbn);
                 rst = findFriend.executeQuery();
                 if(rst == null) {
                 	System.out.println("Find nobody"); 
-                	return false;}
+                	}
                 while (rst.next())
-                {System.out.println("Friend name: " + rst.getString("READER.ACCOUNTID" + "   " +"Friend email: " + rst.getString("READER.EMAIL")));return true;}
-                
+                {System.out.println("Friend name: " + rst.getString("ACCOUNTID") + "   " +"Friend email: " + rst.getString("EMAIL"));}
+
                 
         }catch (SQLException e) {
             throw new RuntimeException(e);
@@ -265,7 +299,7 @@ class Admin {
             }
 
         }
-        Integer AdminAddUser(OracleConnection conn) throws IOException {
+        void AdminAddUser(OracleConnection conn) throws IOException {
             PreparedStatement 	addReader;
             ResultSet rst =null;
             try {
@@ -298,7 +332,7 @@ class Admin {
             PreparedStatement 	deleteReader;
             ResultSet rst =null;
             try {
-            	    deleteReader = conn.prepareStatement ("delete from READER where ACCOUNTID = '?' ");
+            	    deleteReader = conn.prepareStatement ("delete from READER where READER.ACCOUNTID = ? ");
             		String accountId;
             		BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
                     System.out.print("accountId: ");
