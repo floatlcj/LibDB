@@ -311,7 +311,43 @@ class Reader{
         }
     }
 
-
+    Boolean Reserve(OracleConnection conn) throws IOException {
+    PreparedStatement pst;
+    ResultSet rst;
+    int isbn, status;
+    String title;
+    try {
+        pst = conn.prepareStatement("select status,title from book where isbn = ?");
+        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+        System.out.println("The ISBN of the book is: ");
+        isbn = Integer.valueOf(br.readLine()).intValue();
+        pst.setInt(1, isbn);
+        rst = pst.executeQuery();
+        if (rst.next()) {
+            status = rst.getInt(1);
+            title = rst.getString(2);
+            System.out.println("Status: " + status);
+            System.out.println("Title: " + title);
+            if (status == 1) {
+                System.out.println("This book is available and can be reserved. " + " " + title);
+                System.out.println("If you want to reserve this book,please enter yes.");
+                BufferedReader buffer = new BufferedReader(new InputStreamReader(System.in));
+                String reserve = buffer.readLine();
+                while(reserve.compareTo("yes") == 0) {
+                    System.out.println("Reserving becomes successfully.");
+                }
+            }
+            if (status == 2) {
+                System.out.println("This book is not available. " + " " + title);
+            }
+        }else{
+            System.out.println("No result");
+        }
+    } catch (SQLException e) {
+        throw new RuntimeException(e);
+    }
+    return true;
+}
 
 }
 class Admin {
