@@ -78,6 +78,7 @@ public class LibraryDB
                         System.out.println("1. Add reader");
                         System.out.println("2. Delete reader");
                         System.out.println("3. Analysis category");
+			System.out.println("4. Deactivate account");
                         System.out.println("-1 to exit");
                         input = Integer.valueOf(readEntry("Input your choice: "));
                         if (input == 1) {
@@ -89,8 +90,12 @@ public class LibraryDB
                             admin.AdminDeleteUser(conn);
                         }
                         else if(input == 3){
-			     clearScreen();
-                             admin.AnalysisReport_Category(conn);
+			    clearScreen();
+                            admin.AnalysisReport_Category(conn);
+                        }
+			else if(input == 4){
+			    clearScreen();
+                            admin.Deactivation(conn);
                         }
                         else if (input == -1) {clearScreen(); break;}
                     }
@@ -415,6 +420,36 @@ class Admin {
             boolean result = deleteReader.execute();
             if(result = true) System.out.println("delete success");
             else System.out.println("delete fail");
+        }catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    void Deactivation(OracleConnection conn) throws IOException {
+        Statement pst;
+        ResultSet rst;
+        try {
+            // Suppose today is 11-DEC-22
+            String today = "11-DEC-22";
+            String sql = "select distinct reader.readerid from operation, reader " +
+                    "where reader.readerid = operation.readerid " +
+                    "and operation.status = 2 " +
+                    "and operation.end < '11-DEC-22'";
+            pst = conn.createStatement();
+            rst = pst.executeQuery(sql);
+            if (rst ==null){
+                System.out.println("No reader's account will be deactivated.");
+            }
+            while (rst.next()){
+                conn.setAutoCommit(false);
+                PreparedStatement updateStatus = conn.prepareStatement("Update reader set status = ? where readerid = ?");
+                updateStatus.setInt(1,0);
+                updateStatus.setString(2,rst.getString(1));
+                updateStatus.executeUpdate();
+                conn.commit();
+                System.out.println("The account of the reader whose reader ID is " + rst.getString(1) + " has been deactivated.");
+            }
+
         }catch (SQLException e) {
             throw new RuntimeException(e);
         }
