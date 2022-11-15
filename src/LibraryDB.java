@@ -222,7 +222,7 @@ class Reader{
                 pst = conn.prepareStatement("SELECT * FROM BOOK WHERE TITLE like ?");
                 System.out.print("Enter a book's name to search books: ");
             }else if (knum == 2) {
-                pst = conn.prepareStatement("SELECT * FROM BOOK WHERE AUTHOR like ?'");
+                pst = conn.prepareStatement("SELECT * FROM BOOK WHERE AUTHOR like ?");
                 System.out.print("Enter a book's author to search books: ");
             }else {
                 pst = conn.prepareStatement("SELECT * FROM BOOK WHERE CATEGORY like ?");
