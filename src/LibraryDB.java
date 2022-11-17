@@ -478,5 +478,31 @@ class Admin {
         }
         System.out.println("The Categories from the top are the most popular.");
     }
-
+    
+	
+    void AdminUpdateStatus(OracleConnection conn) throws IOException {
+        PreparedStatement 	updateStatus;
+        ResultSet rst =null;
+        try {
+           
+        	updateStatus = conn.prepareStatement ("update BOOK set STATUS = ? where ISBN = ?");
+            int status, isbn;
+            BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+            System.out.print("status: ");
+            status = Integer.valueOf(br.readLine()).intValue();
+            System.out.print("ISBN: ");
+            isbn = Integer.valueOf(br.readLine()).intValue();
+            
+            updateStatus.setString(1,status);
+            updateStatus.setString(2,isbn);
+            
+            boolean result = updateStatus.execute();
+            if(result = true) System.out.println("update success");
+            else System.out.println("update fail");
+        }catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+	
+	
 }
