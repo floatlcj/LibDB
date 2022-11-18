@@ -376,7 +376,7 @@ class Reader{
             rst = pst.executeQuery();
             pst1 = conn.prepareStatement("select book.title from operation, book " +
                     "where book.isbn = operation.isbn " +
-                    "and (operation.status = 2 or operation.status = 3)" +
+                    "and (operation.status = 2 or operation.status = 1)" +
                     "and round(to_number(end - to_date(?,'yyyy-mm-dd'))) <= 3" +
                     "and operation.readerid = ?");
             while (rst.next()) {
