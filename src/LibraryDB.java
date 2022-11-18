@@ -7,20 +7,9 @@ public class LibraryDB
 {
     public static void main(String args[]) throws SQLException, IOException, InterruptedException
     {
-        // Login
-//        clearScreen();
-//        Console console = System.console();
-//        System.out.print("Enter your username: ");    // Your Oracle ID with double quote
-//        String username = console.readLine();         // e.g. "98765432d"
-//        System.out.print("Enter your password: ");    // Password of your Oracle Account
-//        char[] password = console.readPassword();
-//        String pwd = String.valueOf(password);
+        
         String username, pwd;
-//        BufferedReader buffer = new BufferedReader(new InputStreamReader(System.in));
-//        System.out.print("Enter your username: ");
-//        username = buffer.readLine();
-//        System.out.print("Enter your password: ");
-//        pwd = buffer.readLine();
+
         username = "\"21103213d\"";
         pwd = "hfnmexfb";
 
@@ -125,58 +114,6 @@ public class LibraryDB
             }
         }
 
-//        // Prepare employee list
-//        Statement stmt;
-//        ResultSet rset;
-//        String snum, namer;
-//        int enumber=0;
-//
-//        // Prepare SQL for request
-//        PreparedStatement prepareQuery = conn.prepareStatement(
-//                "select * from book where isbn = ?");
-//
-//        while (enumber != -1)
-//        {
-//            stmt = conn.createStatement();
-//            rset = stmt.executeQuery("select isbn, title from book");
-////            System.out.println("ENO" + " " + "ENAME");
-//            while (rset.next())
-//            {
-//                namer = rset.getString(2);
-//                if (!rset.wasNull())
-//                {
-//                    System.out.println(rset.getInt(1) + " " + namer);
-//                }
-//            }
-//
-//            // Get request
-//            System.out.println();
-//            snum = readEntry("ISBN: ");
-//            enumber = Integer.valueOf(snum).intValue();
-//
-//            // Get result
-//            prepareQuery.setInt(1, enumber);
-//            rset = prepareQuery.executeQuery();
-//
-//            // Display result
-//            while (rset.next())
-//            {
-//                System.out.flush();
-////                System.out.println("ENO ENAME ZIO HDATE");
-//                System.out.println(rset.getInt(1) + " " +
-//                        rset.getString(2) + " " +
-//                        rset.getString(3) + " " +
-//                        rset.getString(4) + " " +
-//                        rset.getString(5) + " " +
-//                        rset.getInt(6));
-//            }
-//
-//            // Continue?
-//            System.out.println();
-//            snum = readEntry(" Enter a number to continue or -1 to exit. ");
-//            enumber = Integer.valueOf(snum).intValue();
-//            clearScreen();
-//        }
 
         // Exit the program
         conn.close();
