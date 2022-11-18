@@ -98,7 +98,7 @@ public class LibraryDB
                         }
 			else if(input == 4){
 			    clearScreen();
-                            admin.AnalysisReport_Category(OracleConnection conn);
+                            admin.AnalysisReport_Category(conn);
                         }
 			else if(input == 5){
 				clearScreen();
@@ -601,8 +601,8 @@ class Admin {
             System.out.print("ISBN: ");
             isbn = Integer.valueOf(br.readLine()).intValue();
             
-            updateStatus.setString(1,status);
-            updateStatus.setString(2,isbn);
+            updateStatus.setInt(1,status);
+            updateStatus.setInt(2,isbn);
             
             boolean result = updateStatus.execute();
             if(result = true) System.out.println("update success");
