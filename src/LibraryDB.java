@@ -78,6 +78,7 @@ public class LibraryDB
 			System.out.println("5. Analysis admin management");
 			System.out.println("6. Analysis banned accounts");
 			System.out.println("7. Update book status");
+			System.out.println("8. Unban reader");
                         System.out.println("-1 to exit");
                         input = Integer.valueOf(readEntry("Input your choice: "));
                         if (input == 1) {
@@ -107,6 +108,10 @@ public class LibraryDB
 			else if(input == 7){
 				clearScreen();
 				admin.AdminUpdateStatus(conn);
+			}
+			else if(input == 8){
+				clearScreen();
+				admin.Activation(conn);
 			}
                         else if (input == -1) {clearScreen(); break;}
                     }
@@ -504,6 +509,25 @@ class Admin {
             }
 
         }catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+    
+    void Activation(OracleConnection conn)throws IOException{
+        PreparedStatement updateStatus;
+        ResultSet rst = null;
+        try{
+            updateStatus = conn.prepareStatement ("update READER set STATUS = 1 where ACCOUNTID = ?");
+            int id;
+            BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+            System.out.print("Reader's ACCOUNTID: ");
+            id = Integer.valueOf(br.readLine()).intValue();
+            updateStatus.setInt(1,id);
+            boolean result = updateStatus.execute();
+            if(result = true) System.out.println("The account(ACCOUNTID = "+ id +")"+ " has been activated.");
+            else System.out.println("Activation fails.");
+
+        }catch (SQLException e){
             throw new RuntimeException(e);
         }
     }
