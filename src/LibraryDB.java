@@ -77,8 +77,11 @@ public class LibraryDB
                     while (input != -1) {
                         System.out.println("1. Add reader");
                         System.out.println("2. Delete reader");
-                        System.out.println("3. Analysis category");
-			System.out.println("4. Deactivate account");
+                        System.out.println("3. Deactivate account");
+			System.out.println("4. Analysis category");
+			System.out.println("5. Analysis admin management");
+			System.out.println("6. Analysis banned accounts");
+			System.out.println("7. Update book status");
                         System.out.println("-1 to exit");
                         input = Integer.valueOf(readEntry("Input your choice: "));
                         if (input == 1) {
@@ -91,12 +94,24 @@ public class LibraryDB
                         }
                         else if(input == 3){
 			    clearScreen();
-                            admin.AnalysisReport_Category(conn);
+                            admin.Deactivation(conn);
                         }
 			else if(input == 4){
 			    clearScreen();
-                            admin.Deactivation(conn);
+                            admin.AnalysisReport_Category(OracleConnection conn);
                         }
+			else if(input == 5){
+				clearScreen();
+				admin.AnalysisReport_NotEnoughAdmin(conn);
+			}
+			else if(input == 6){
+				clearScreen();
+				admin.AnalysisReport_BannedAccount(conn);
+			}
+			else if(input == 7){
+				clearScreen();
+				admin.AdminUpdateStatus(conn);
+			}
                         else if (input == -1) {clearScreen(); break;}
                     }
                 }else continue;
@@ -456,7 +471,7 @@ class Admin {
     }
 
     void AnalysisReport_Category(OracleConnection conn){
-        String sql = "select category, count(category) from book group by category order by count(category) desc";
+        String sql = "select category, count(category) from book where status = 2 group by category order by count(category) desc";
         ResultSet result;
         Statement stmt;
         try {
@@ -466,19 +481,112 @@ class Admin {
         }
         try{
             result = stmt.executeQuery(sql);
+			System.out.println("-------------------------------------------------------------------");
+			int No = 0;	
+				while (result.next()) {
+					No++;
+					System.out.flush();
+                	System.out.println("|No."+ No + "|Category:" + result.getString(1)+"|Borrowed:" + result.getInt(2) + "|\n");
+					if(No == 3){
+						System.out.println("The popular categories are the top 3 categories.");
+						System.out.println("Storing more books in these categories should be a good choice.\n");
 
-            while (result.next()) {
-                System.out.flush();
-                System.out.println(result.getString(1)+" "+result.getInt(2));
-            }
+						}
+			    }
+			System.out.println("-------------------------------------------------------------------");
             result.close();
             stmt.close();
         }catch(SQLException e){
             e.printStackTrace();
         }
-        System.out.println("The Categories from the top are the most popular.");
     }
-    
+	
+	
+	
+   
+    void AnalysisReport_NotEnoughAdmin(OracleConnection conn){
+        String sql1 = "select count(adminid) from admin";
+        String sql2 = "select count(readerid) from reader";
+        ResultSet result1,result2;
+        Statement stmt1,stmt2;
+        try {
+            stmt1 = conn.createStatement();
+            stmt2 = conn.createStatement();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+        try{
+            result1 = stmt1.executeQuery(sql1);
+            result2 = stmt2.executeQuery(sql2);
+			System.out.println("-------------------------------------------------------------------");
+				
+				if (result1.next() & result2.next()) {
+				 	System.out.flush();
+				    System.out.println("Number of admin is "+ result1.getInt("count(adminid)") +".");
+				  	System.out.println("Number of reader is " + result2.getInt("count(readerid)") +".\n");
+					int NoOfAdmin = result1.getInt("count(adminid)");
+					int NoOfReader = result2.getInt("count(readerid)");
+					System.out.println("Each admin is supposed to manage 50 reader users.");
+                    if(50*NoOfAdmin < NoOfReader){
+						System.out.println("Result: Too many reader users may cause large workload that admins can not handle.");
+						System.out.println("        Please arrange more admins to void potential administative mistakes.");
+			    	}else{
+                        
+						System.out.println("Result: The system has adequate admins to manage the reader users.");
+					}
+				
+				}
+			System.out.println("-------------------------------------------------------------------");
+            result1.close();result2.close();
+            stmt1.close();stmt2.close();
+        }catch(SQLException e){
+            e.printStackTrace();
+        }
+    }
+	
+	
+	
+    void AnalysisReport_BannedAccount(OracleConnection conn){
+        String sql1 = "select count(*) from reader where status = 0";
+		String sql2 = "select count(*) from reader";
+        ResultSet result1, result2;
+        Statement stmt1, stmt2;
+        try {
+            stmt1 = conn.createStatement();
+			stmt2 = conn.createStatement();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+        try{
+            result1 = stmt1.executeQuery(sql1);
+			result2 = stmt2.executeQuery(sql2);
+			System.out.println("-------------------------------------------------------------------");
+				
+				if (result1.next() & result2.next()) {
+				 	System.out.flush();
+				    System.out.println("The total number of readers is "+ result2.getInt(1) +".");
+				  	System.out.println("The total number of banned accounts is " + result1.getInt(1) +".\n");
+					double esti_proportion = 0.05;
+					double real_proportion = result1.getDouble(1)/result2.getDouble(1);
+					double rounded_prop = Math.round(real_proportion*100);
+					System.out.println(rounded_prop+"% of readers' accounts are banned.");
+					if(real_proportion < esti_proportion){
+						System.out.println("Result: Our system of borrowing time and returning time for books is very reasonable.");
+			    	}else{
+						System.out.println("Result: Too many reader's account are banned.");
+						System.out.println("        The main reason may be that the book borrowing time and returning time for readers are not enough.");
+						System.out.println("        Extending the time for borrowing books is considerable.");
+					}
+				
+				}
+			System.out.println("-------------------------------------------------------------------");
+            result1.close();result2.close();
+            stmt1.close();stmt2.close();
+        }catch(SQLException e){
+            e.printStackTrace();
+        }
+    }
+	
 	
     void AdminUpdateStatus(OracleConnection conn) throws IOException {
         PreparedStatement 	updateStatus;
