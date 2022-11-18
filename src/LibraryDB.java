@@ -665,7 +665,7 @@ class Admin {
             boolean flag2 = true;
             pst = conn.prepareStatement("select distinct reader.accountid from operation, reader " +
                     "where reader.readerid = operation.readerid " +
-                    "and (operation.status = 2 or operation.status = 3)" +
+                    "and (operation.status = 2 or operation.status = 1)" +
                     "and round(to_number(end - to_date(?,'yyyy-mm-dd'))) <= 3");
             pst.setString(1,sDate);
             rst1 = pst.executeQuery();
