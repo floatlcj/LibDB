@@ -53,6 +53,7 @@ public class LibraryDB
                     System.out.println("3. search books by Category");
                     System.out.println("4. find friend by book");
                     System.out.println("5. recommended books");
+		    System.out.println("6. check the status of the book and reserve book");
                     System.out.println("-1 to exit");
                     knum = Integer.valueOf(readEntry("Input your choice: ")).intValue();
                     if (knum == 1 || knum == 2 || knum == 3) {
@@ -66,6 +67,10 @@ public class LibraryDB
                     if (knum == 5){
                         clearScreen();
                         reader.ReaderRecommendBook(conn);
+                    }
+		    if (knum == 5){
+                        clearScreen();
+                        reader.Reserve(conn);
                     }
                     if (knum == -1) {clearScreen(); break;}
                 }
@@ -332,42 +337,84 @@ class Reader{
     }
 
     Boolean Reserve(OracleConnection conn) throws IOException {
-    PreparedStatement pst;
-    ResultSet rst;
-    int isbn, status;
-    String title;
-    try {
-        pst = conn.prepareStatement("select status,title from book where isbn = ?");
-        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
-        System.out.println("The ISBN of the book is: ");
-        isbn = Integer.valueOf(br.readLine()).intValue();
-        pst.setInt(1, isbn);
-        rst = pst.executeQuery();
-        if (rst.next()) {
-            status = rst.getInt(1);
-            title = rst.getString(2);
-            System.out.println("Status: " + status);
-            System.out.println("Title: " + title);
-            if (status == 1) {
-                System.out.println("This book is available and can be reserved. " + " " + title);
-                System.out.println("If you want to reserve this book,please enter yes.");
-                BufferedReader buffer = new BufferedReader(new InputStreamReader(System.in));
-                String reserve = buffer.readLine();
-                while(reserve.compareTo("yes") == 0) {
-                    System.out.println("Reserving becomes successfully.");
+        PreparedStatement pst;
+        PreparedStatement changestatus;
+        PreparedStatement addoperation;
+        PreparedStatement getreaderid;
+        ResultSet add ;
+        ResultSet rst;
+        ResultSet change;
+        int isbn, status;
+        String title;
+        try {
+            pst = conn.prepareStatement("select status,title from book where isbn = ?");
+            BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+            System.out.println("The ISBN of the book is: ");
+            isbn = Integer.valueOf(br.readLine()).intValue();
+            pst.setInt(1, isbn);
+            rst = pst.executeQuery();
+            if (rst.next()) {
+                status = rst.getInt(1);
+                title = rst.getString(2);
+                System.out.println("Status: " + status);
+                System.out.println("Title: " + title);
+                if (status == 1) {
+                    System.out.println("This book is available and can be reserved. " + " " + title);
+                    System.out.println("If you want to reserve this book,please enter yes.");
+                    BufferedReader buffer = new BufferedReader(new InputStreamReader(System.in));
+                    String reserve = buffer.readLine();
+                    while(reserve.compareTo("yes") == 0) {
+                        changestatus = conn.prepareStatement("update book set status=2 where isbn = ?");
+                        changestatus.setInt(1,isbn);
+                        change = changestatus.executeQuery();
+                        System.out.println("Reserving becomes successfully.");
+                        int readerid,STATUS;
+                        STATUS = 1;
+                        getreaderid = conn.prepareStatement("select readerid from reader where accountid = ?");
+                        this.accountid = String.valueOf(accountID);
+                        System.out.println("Your account id is: " + accountid);
+                        accountid = String.valueOf(accountID);
+                        getreaderid.setString(1,accountid);
+                        add = getreaderid.executeQuery();
+                        if (add.next()) {
+                            readerid = add.getInt(1);
+
+                        }
+                        addoperation = conn.prepareStatement("INSERT INTO OPERATION(READERID,ISBN,BEGIN,END,STATUS) VALUES(?,?,?,?,?)");
+                        int readerID, ISBN, Status;
+                        Status = 1;
+                        Date began  = new Date();
+                        SimpleDateFormat dateFormat=new SimpleDateFormat("yyyy-MM-dd");
+                        String begin = dateFormat.format(began);
+                        Date reserveend = new Date(System.currentTimeMillis() +10*24*60*60*1000);
+                        String end = dateFormat.format(reserveend);
+                        addoperation.setInt(1,add.getInt(1));
+                        addoperation.setInt(2,isbn);
+                        addoperation.setDate(3, java.sql.Date.valueOf(begin));
+                        addoperation.setDate(4, java.sql.Date.valueOf(end));
+                        addoperation.setInt(5,Status);
+                        boolean test = addoperation.execute();
+                        if(test = true) System.out.println("Your booking time will be from " + begin +" to " + reserveend);
+                        else System.out.println("There are some problems, please contact staffs for helping.");
+                            break;
+                    }
+                }
+                if (status == 2) {
+                    System.out.println("This book is not available. " + " " + title);
+
+                }
+                if (status == 3) {
+                    System.out.println("This book is not available. " + " " + title);
                 }
             }
-            if (status == 2) {
-                System.out.println("This book is not available. " + " " + title);
+            else{
+                System.out.println("No result");
             }
-        }else{
-            System.out.println("No result");
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
         }
-    } catch (SQLException e) {
-        throw new RuntimeException(e);
+        return  true;
     }
-    return true;
-}
 
 }
 class Admin {
